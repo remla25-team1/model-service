@@ -4,4 +4,4 @@ flasgger==0.9.7.1
 joblib==1.4.2
 
 # lib-ml
-# git+https://github.com/remla25-team1/lib-ml.git@v0.0.1#egg=lib_ml
+git+https://github.com/remla25-team1/lib-ml.git@v0.0.1#egg=lib_ml
