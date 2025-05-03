@@ -5,12 +5,19 @@ Flask API of the tweet sentiment detection model.
 import joblib
 from flask import Flask, jsonify, request
 from flasgger import Swagger
+from lib_ml.preprocessing import Preprocessor
+import logging
 
 # from lib_ml.preprocessing import prepare  
 # import model from an accessible location with a public link
 
 app = Flask(__name__)
 swagger = Swagger(app)
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+preprocessor = Preprocessor()
 
 @app.route("/", methods=["GET"])
 def index():
@@ -43,16 +50,25 @@ def predict():
     """
     input_data = request.get_json()
     tweet = input_data.get('tweet')
-    processed_tweet = prepare(tweet)
+    # processed_tweet = prepare(tweet)
+    processed_tweet = preprocessor.process_item(tweet)
+    logger.debug(f"Processed tweet: {processed_tweet}")
+
+    logger.info(f"Received tweet for classification: {tweet}")
     model = joblib.load('output/model.joblib')
-    prediction = model.predict(processed_tweet)[0]
+    vectorizer = joblib.load("bow/c1_BoW_Sentiment_Model.pkl")
+
+    transformed_input = vectorizer.transform([processed_tweet]).toarray()
+    prediction = model.predict(transformed_input)[0]
+
+    logger.info(f"Prediction result: {prediction}") # 0 is negative, 1 is positive
 
     res = {
-        "result": prediction,
+        "result": int(prediction),
         "classifier": "decision tree",
         "tweet": tweet
     }
-    print(tweet)
+    # print(tweet, flush=True)
 
     return jsonify(res)
 
