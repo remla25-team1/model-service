@@ -54,7 +54,7 @@ def predict():
     # Predict
     model = joblib.load('output/v0.0.2_Sentiment_Model.pkl.joblib')
     prediction = model.predict(transformed_input)[0]
-    logger.info(f"Prediction result: {prediction}") # 0 is negative, 1 is positive
+    logger.info(f"Prediction result: {prediction}")
 
     res = {
         "result": int(prediction),
