@@ -2,13 +2,18 @@
 Flask API of the tweet sentiment detection model.
 """
 
-import joblib, pickle
 from flask import Flask, jsonify, request
 from flasgger import Swagger
 from lib_ml.preprocessing import Preprocessor
+import joblib, logging
 
 app = Flask(__name__)
 swagger = Swagger(app)
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+preprocessor = Preprocessor()
 
 @app.route("/predict", methods=['POST'])
 def predict():
@@ -36,18 +41,23 @@ def predict():
     """
     input_data = request.get_json()
     tweet = input_data.get('tweet')
-    # Preprocess the input
-    preprocessor = Preprocessor()
+
+    # Preprocess tweet
+    logger.info(f"Received tweet for classification: {tweet}")
     processed_tweet = preprocessor.process_item(tweet)
+    logger.debug(f"Processed tweet: {processed_tweet}")
+
     # Transform data
-    cv = pickle.load(open('models/c1_BoW_Sentiment_Model.joblib', "rb"))
-    processed_tweet = cv.transform([processed_tweet]).toarray()
+    vectorizer = joblib.load("bow/c1_BoW_Sentiment_Model.pkl")
+    transformed_input = vectorizer.transform([processed_tweet]).toarray()
+
     # Predict
-    model = joblib.load('models/v0.0.2_Sentiment_Model.joblib')
-    prediction = model.predict(processed_tweet)[0]
+    model = joblib.load('output/v0.0.2_Sentiment_Model.pkl.joblib')
+    prediction = model.predict(transformed_input)[0]
+    logger.info(f"Prediction result: {prediction}") # 0 is negative, 1 is positive
 
     res = {
-        "result": prediction,
+        "result": int(prediction),
         "classifier": "Naive Bayes classifier",
         "tweet": tweet
     }
