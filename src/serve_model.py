@@ -2,6 +2,7 @@
 Flask API of the tweet sentiment detection model.
 """
 import os
+
 from flask import Flask, jsonify, request
 from flasgger import Swagger
 from lib_ml.preprocessing import Preprocessor
@@ -108,14 +109,14 @@ def dumb_predict():
         200:
             description: "The result of the classification: 'positive' or 'negative'."
     
-    """
+    """W
     input_data = request.get_json()
     tweet = input_data.get('tweet')
 
     return jsonify({
         "result": 1,
         "classifier": "Naive Bayes classifier",
-        "tweet": tweet
+        "tweet": tweetW
     })
 
 
