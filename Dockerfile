@@ -1,5 +1,9 @@
 FROM python:3.11-slim
 
+# inject tag via github action
+ARG MODEL_VERSION=unknown
+ENV MODEL_VERSION=${MODEL_VERSION}
+
 WORKDIR /root/
 
 COPY requirements.txt .
