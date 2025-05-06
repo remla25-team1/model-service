@@ -24,14 +24,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GH_TOKEN }}
-      - name: Extract version from Git tag
-        id: vars
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV     
       - name: Build, tag, and publish image
         run: |
           IMG="ghcr.io/${{github.repository}}"
           IMG=${IMG@L} # lower case the image
           docker build \
+            --build-arg MODEL_VERSION=${{ env.version }} \
             --tag $IMG:${{ env.version }} \
             --tag $IMG:${{ env.version_major }}.${{ env.version_minor }}.latest \
             --tag $IMG:${{ env.version_major }}.latest \

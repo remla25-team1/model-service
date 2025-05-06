@@ -109,7 +109,7 @@ def dumb_predict():
         200:
             description: "The result of the classification: 'positive' or 'negative'."
     
-    """W
+    """
     input_data = request.get_json()
     tweet = input_data.get('tweet')
 
