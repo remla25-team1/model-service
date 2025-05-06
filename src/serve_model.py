@@ -1,6 +1,7 @@
 """
 Flask API of the tweet sentiment detection model.
 """
+import os
 
 from flask import Flask, jsonify, request
 from flasgger import Swagger
@@ -14,6 +15,26 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 preprocessor = Preprocessor()
+
+@app.route("/version")
+def version():
+    """
+    Get the version of the model-service.
+    ---
+    tags:
+      - Version
+    summary: Retrieve model-service version
+    description: Returns the version of the model-service as injected via environment variable.
+    responses:
+      200:
+        description: Version info retrieved successfully
+        content:
+          application/json:
+            example:
+              version: v0.0.2
+    """
+    # For now it's get version from enviroment. 
+    return jsonify({"version": os.getenv("MODEL_VERSION", "unknown")})
 
 @app.route("/predict", methods=['POST'])
 def predict():
@@ -88,14 +109,14 @@ def dumb_predict():
         200:
             description: "The result of the classification: 'positive' or 'negative'."
     
-    """
+    """W
     input_data = request.get_json()
     tweet = input_data.get('tweet')
 
     return jsonify({
         "result": 1,
         "classifier": "Naive Bayes classifier",
-        "tweet": tweet
+        "tweet": tweetW
     })
 
 
