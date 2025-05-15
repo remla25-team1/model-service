@@ -16,6 +16,9 @@ RUN apt-get update && \
 RUN python -m pip install --upgrade pip && \
 	pip install -r requirements.txt
 
+ENV PORT=8080 \
+	HOST=0.0.0.0 
+
 # get and mount trained model
 ADD https://github.com/remla25-team1/model-training/releases/download/v0.0.2/v0.0.2_Sentiment_Model.pkl \
     output/v0.0.2_Sentiment_Model.pkl.joblib
@@ -23,6 +26,8 @@ ADD https://github.com/remla25-team1/model-training/releases/download/v0.0.2/c1_
 	bow/c1_BoW_Sentiment_Model.pkl
 
 COPY src src
+
+EXPOSE ${PORT}
 
 ENTRYPOINT ["python"]
 CMD ["src/serve_model.py"]

@@ -15,6 +15,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 preprocessor = Preprocessor()
+HOST = os.environ.get("HOST", "0.0.0.0")
+PORT = os.environ.get("PORT", 8080)
 
 @app.route("/version")
 def version():
@@ -116,9 +118,9 @@ def dumb_predict():
     return jsonify({
         "result": 1,
         "classifier": "Naive Bayes classifier",
-        "tweet": tweetW
+        "tweet": tweet
     })
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    app.run(host=HOST, port=PORT, debug=False)
