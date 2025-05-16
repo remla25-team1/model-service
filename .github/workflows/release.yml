@@ -39,4 +39,3 @@ jobs:
             --tag $IMG:latest \
             --push \
             .
-          docker push --all-tags $IMG

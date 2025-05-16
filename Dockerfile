@@ -1,31 +1,44 @@
-FROM python:3.11-slim
+FROM python:3.11-slim AS builder
 
-# inject tag via github action
 ARG MODEL_VERSION=unknown
 ENV MODEL_VERSION=${MODEL_VERSION}
 
-WORKDIR /root/
+WORKDIR /app
 
 COPY requirements.txt .
 
 # get git
 RUN apt-get update && \
-	apt-get install -y --no-install-recommends git && \
-	rm -rf /var/lib/apt/lists/*
+    apt-get install -y --no-install-recommends git && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN python -m pip install --upgrade pip && \
-	pip install -r requirements.txt
-
-ENV PORT=8080 \
-	HOST=0.0.0.0 
+    pip install --user -r requirements.txt
 
 # get and mount trained model
 ADD https://github.com/remla25-team1/model-training/releases/download/v0.0.2/v0.0.2_Sentiment_Model.pkl \
     output/v0.0.2_Sentiment_Model.pkl.joblib
-ADD https://github.com/remla25-team1/model-training/releases/download/v0.0.2/c1_BoW_Sentiment_Model.pkl \ 
-	bow/c1_BoW_Sentiment_Model.pkl
+ADD https://github.com/remla25-team1/model-training/releases/download/v0.0.2/c1_BoW_Sentiment_Model.pkl \
+    bow/c1_BoW_Sentiment_Model.pkl
 
 COPY src src
+
+FROM python:3.11-slim
+
+WORKDIR /root/
+
+ARG MODEL_VERSION=unknown
+ENV MODEL_VERSION=${MODEL_VERSION}
+
+ENV PORT=8080 \
+    HOST=0.0.0.0
+
+COPY --from=builder /app/output output
+COPY --from=builder /app/bow bow
+COPY --from=builder /root/.local /root/.local
+COPY --from=builder /app/src src
+
+ENV PATH=/root/.local/bin:$PATH
 
 EXPOSE ${PORT}
 
