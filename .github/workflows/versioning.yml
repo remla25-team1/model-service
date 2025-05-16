@@ -9,7 +9,7 @@ on:
 
 jobs:
   bump-patch-after-release:
-    if: github.event.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/excellent_Versioning&Releases'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
