@@ -10,7 +10,6 @@ jobs:
   bump-patch-after-release:
     permissions:
       contents: write
-      workflows: write
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
