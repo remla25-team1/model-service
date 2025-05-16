@@ -39,8 +39,12 @@ jobs:
           MAJOR=$(echo "$VERSION" | cut -d . -f 1)
           MINOR=$(echo "$VERSION" | cut -d . -f 2)
           PATCH=$(echo "$VERSION" | cut -d . -f 3)
-          NEXT_PATCH=$((PATCH + 1))
-          NEXT_VERSION="$MAJOR.$MINOR.$NEXT_PATCH-pre"
+          # If PATCH is empty, try to get from VERSION.txt (user may have set v0.0.1 etc)
+          if [[ -z "$PATCH" ]]; then
+            PATCH=$(cat VERSION.txt | cut -d . -f 3 | sed 's/[^0-9].*//')
+            if [[ -z "$PATCH" ]]; then PATCH=0; fi
+          fi
+          NEXT_VERSION="$MAJOR.$MINOR.$PATCH-pre"
           echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
 
       - name: Bump to next pre-release version on main
