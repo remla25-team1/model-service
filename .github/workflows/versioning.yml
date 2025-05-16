@@ -9,6 +9,8 @@ on:
 
 jobs:
   bump-patch-after-release:
+    permissions:
+      contents: write
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/excellent_Versioning&Releases'
     runs-on: ubuntu-latest
     steps:
@@ -50,6 +52,8 @@ jobs:
           git push
 
   auto-patch-release:
+    permissions:
+      contents: write
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
