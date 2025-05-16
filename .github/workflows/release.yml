@@ -1,7 +1,9 @@
 name: Release
 on: 
   push: 
-    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+    tags: 
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-pre*"
 jobs:
   build:
     runs-on: ubuntu-24.04
