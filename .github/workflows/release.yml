@@ -1,7 +1,9 @@
 name: Release
 on: 
   push: 
-    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+    tags: 
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-pre*"
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -24,15 +26,18 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GH_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Build, tag, and publish image
         run: |
           IMG="ghcr.io/${{github.repository}}"
           IMG=${IMG@L} # lower case the image
-          docker build \
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
             --build-arg MODEL_VERSION=${{ env.version }} \
             --tag $IMG:${{ env.version }} \
             --tag $IMG:${{ env.version_major }}.${{ env.version_minor }}.latest \
             --tag $IMG:${{ env.version_major }}.latest \
             --tag $IMG:latest \
+            --push \
             .
-          docker push --all-tags $IMG
