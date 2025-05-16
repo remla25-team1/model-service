@@ -5,13 +5,12 @@ on:
   push:
     branches:
       - main
-      - excellent_Versioning&Releases
 
 jobs:
   bump-patch-after-release:
     permissions:
       contents: write
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/excellent_Versioning&Releases'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
