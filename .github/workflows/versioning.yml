@@ -1,0 +1,91 @@
+name: Automated Versioning and Pre-Release Bump
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  bump-patch-after-release:
+    if: github.event.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Fetch all tags
+        run: git fetch --tags
+
+      - name: Get latest release version
+        id: get_version
+        run: |
+          LATEST_TAG=$(git tag --list 'v*.*.*' --sort=-v:refname | head -n1)
+          if [[ -z "$LATEST_TAG" ]]; then
+            echo "No release tag found, using v0.0.0"
+            LATEST_TAG="v0.0.0"
+          fi
+          echo "Latest tag: $LATEST_TAG"
+          VERSION=${LATEST_TAG#v}
+          MAJOR=$(echo "$VERSION" | cut -d . -f 1)
+          MINOR=$(echo "$VERSION" | cut -d . -f 2)
+          PATCH=$(echo "$VERSION" | cut -d . -f 3)
+          NEXT_PATCH=$((PATCH + 1))
+          NEXT_VERSION="$MAJOR.$MINOR.$NEXT_PATCH-pre"
+          echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Bump to next pre-release version on main
+        run: |
+          echo "${{ steps.get_version.outputs.next_version }}" > VERSION.txt
+          git add VERSION.txt
+          git commit -m "chore: bump version to ${{ steps.get_version.outputs.next_version }} after release"
+          git push
+
+  auto-patch-release:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Git
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Fetch all tags
+        run: git fetch --tags
+
+      - name: Read base version and generate next patch tag
+        id: tag
+        run: |
+          BASE_VERSION=$(cat VERSION.txt)
+          if [[ "$BASE_VERSION" =~ -pre$ ]]; then
+            BASE_VERSION=${BASE_VERSION%-pre}
+          fi
+          LATEST_TAG=$(git tag --list "v$BASE_VERSION" | head -n1)
+          if [[ -z "$LATEST_TAG" ]]; then
+            PATCH=0
+          else
+            PATCH=$(echo "$BASE_VERSION" | cut -d . -f 3)
+          fi
+          MAJOR=$(echo "$BASE_VERSION" | cut -d . -f 1)
+          MINOR=$(echo "$BASE_VERSION" | cut -d . -f 2)
+          NEXT_PATCH=$((PATCH + 1))
+          NEW_TAG="v$MAJOR.$MINOR.$NEXT_PATCH"
+          echo "Generated tag: $NEW_TAG"
+          echo "new_tag=$NEW_TAG" >> $GITHUB_OUTPUT
+
+      - name: Create and push tag
+        run: |
+          git tag ${{ steps.tag.outputs.new_tag }}
+          git push origin ${{ steps.tag.outputs.new_tag }}
