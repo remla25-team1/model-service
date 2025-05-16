@@ -10,13 +10,14 @@ jobs:
   bump-patch-after-release:
     permissions:
       contents: write
+      workflows: write
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.WRITE_PERMISSION }}
 
       - name: Set up Git
         run: |
