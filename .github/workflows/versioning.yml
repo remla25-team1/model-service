@@ -2,10 +2,7 @@ name: Automated Versioning and Pre-Release Bump
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-
+  
 jobs:
   bump-patch-after-release:
     permissions:
@@ -69,7 +66,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.WRITE_PERMISSION }}
 
       - name: Set up Git
         run: |
