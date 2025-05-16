@@ -24,6 +24,8 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GH_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Build, tag, and publish image
         run: |
           IMG="ghcr.io/${{github.repository}}"
