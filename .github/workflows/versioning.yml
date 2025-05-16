@@ -46,9 +46,13 @@ jobs:
       - name: Bump to next pre-release version on main
         run: |
           echo "${{ steps.get_version.outputs.next_version }}" > VERSION.txt
-          git add VERSION.txt
-          git commit -m "chore: bump version to ${{ steps.get_version.outputs.next_version }} after release"
-          git push
+          if ! git diff --quiet VERSION.txt; then
+            git add VERSION.txt
+            git commit -m "chore: bump version to ${{ steps.get_version.outputs.next_version }} after release"
+            git push
+          else
+            echo "No version bump needed, VERSION.txt is already up to date."
+          fi
 
   auto-patch-release:
     permissions:
