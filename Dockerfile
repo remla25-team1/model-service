@@ -20,17 +20,17 @@ WORKDIR /app
 
 COPY src src
 
-RUN mkdir -p /app/output
-
 COPY --from=builder /root/.local /root/.local
 
+RUN mkdir -p /app/output
+
 # Environment variables
-ENV PORT=8080 \
+ENV PATH=/root/.local/bin:$PATH \
+    PORT=8080 \
     HOST=0.0.0.0 \
-    PATH=/root/.local/bin:$PATH \
     MODEL_DIR=/app/output \
     MODEL_VERSION=v0.0.2
-    
+  
 EXPOSE ${PORT}
 
 ENTRYPOINT ["python"]
