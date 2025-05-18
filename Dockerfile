@@ -1,45 +1,36 @@
+# Build stage
 FROM python:3.11-slim AS builder
-
-ARG MODEL_VERSION=unknown
-ENV MODEL_VERSION=${MODEL_VERSION}
 
 WORKDIR /app
 
-COPY requirements.txt .
-
-# get git
+# Install git   
 RUN apt-get update && \
     apt-get install -y --no-install-recommends git && \
     rm -rf /var/lib/apt/lists/*
 
+# Install dependencies 
+COPY requirements.txt .
 RUN python -m pip install --upgrade pip && \
     pip install --user -r requirements.txt
 
-# get and mount trained model
-ADD https://github.com/remla25-team1/model-training/releases/download/v0.0.2/v0.0.2_Sentiment_Model.pkl \
-    output/v0.0.2_Sentiment_Model.pkl.joblib
-ADD https://github.com/remla25-team1/model-training/releases/download/v0.0.2/c1_BoW_Sentiment_Model.pkl \
-    bow/c1_BoW_Sentiment_Model.pkl
+# Runtime stage
+FROM python:3.11-slim
+
+WORKDIR /app
 
 COPY src src
 
-FROM python:3.11-slim
+RUN mkdir -p /app/output
 
-WORKDIR /root/
-
-ARG MODEL_VERSION=unknown
-ENV MODEL_VERSION=${MODEL_VERSION}
-
-ENV PORT=8080 \
-    HOST=0.0.0.0
-
-COPY --from=builder /app/output output
-COPY --from=builder /app/bow bow
 COPY --from=builder /root/.local /root/.local
-COPY --from=builder /app/src src
 
-ENV PATH=/root/.local/bin:$PATH
-
+# Environment variables
+ENV PORT=8080 \
+    HOST=0.0.0.0 \
+    PATH=/root/.local/bin:$PATH \
+    MODEL_DIR=/app/output \
+    MODEL_VERSION=v0.0.2
+    
 EXPOSE ${PORT}
 
 ENTRYPOINT ["python"]
