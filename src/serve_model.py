@@ -1,22 +1,33 @@
 """
 Flask API of the tweet sentiment detection model.
 """
-import os
 
+import os
+import joblib, logging
 from flask import Flask, jsonify, request
 from flasgger import Swagger
 from lib_ml.preprocessing import Preprocessor
-import joblib, logging
+from model_downloader import download_model
 
+# Load environment variables
+HOST = os.environ.get("HOST", "0.0.0.0")
+PORT = os.environ.get("PORT", 8080)
+MODEL_DIR = os.getenv("MODEL_DIR", "/app/output")
+MODEL_VERSION = os.getenv("MODEL_VERSION", "v0.0.2")
+
+# Create Flask app
 app = Flask(__name__)
 swagger = Swagger(app)
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
+# Load models
+download_model(f"{MODEL_VERSION}_Sentiment_Model.pkl")
+download_model(f"c1_BoW_Sentiment_Model.pkl")
+model = joblib.load(f'{MODEL_DIR}/{MODEL_VERSION}_Sentiment_Model.pkl')
+vectorizer = joblib.load(f"{MODEL_DIR}/c1_BoW_Sentiment_Model.pkl")
 preprocessor = Preprocessor()
-HOST = os.environ.get("HOST", "0.0.0.0")
-PORT = os.environ.get("PORT", 8080)
 
 @app.route("/version")
 def version():
@@ -35,7 +46,7 @@ def version():
             example:
               version: v0.0.2
     """
-    # For now it's get version from enviroment. 
+    # For now it gets version from enviroment. 
     return jsonify({"version": os.getenv("MODEL_VERSION", "unknown")})
 
 @app.route("/predict", methods=['POST'])
@@ -70,12 +81,8 @@ def predict():
     processed_tweet = preprocessor.process_item(tweet)
     logger.debug(f"Processed tweet: {processed_tweet}")
 
-    # Transform data
-    vectorizer = joblib.load("bow/c1_BoW_Sentiment_Model.pkl")
-    transformed_input = vectorizer.transform([processed_tweet]).toarray()
-
     # Predict
-    model = joblib.load('output/v0.0.2_Sentiment_Model.pkl.joblib')
+    transformed_input = vectorizer.transform([processed_tweet]).toarray()
     prediction = model.predict(transformed_input)[0]
     logger.info(f"Prediction result: {prediction}")
 
@@ -86,7 +93,6 @@ def predict():
     }
 
     return jsonify(res)
-
 
 @app.route('/dumbpredict', methods=['POST'])
 def dumb_predict():
@@ -120,7 +126,6 @@ def dumb_predict():
         "classifier": "Naive Bayes classifier",
         "tweet": tweet
     })
-
 
 if __name__ == '__main__':
     app.run(host=HOST, port=PORT, debug=False)
