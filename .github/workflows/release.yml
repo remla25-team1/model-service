@@ -48,4 +48,16 @@ jobs:
             --tag $IMG:${{ env.version_major }}.latest \
             --tag $IMG:latest \
             --push \
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-pre-') }}
+          files: |
+            Dockerfile
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
             .
