@@ -48,6 +48,7 @@ jobs:
             --tag $IMG:${{ env.version_major }}.latest \
             --tag $IMG:latest \
             --push \
+            .
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -60,4 +61,4 @@ jobs:
             Dockerfile
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-            .
+            
